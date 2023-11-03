@@ -58,8 +58,20 @@ export default {
                 sans: ['ManropeVariable', 'Manrope', ...defaultTheme.fontFamily.sans],
             },
             colors,
+            typography: ({ theme }) => ({
+                base: {
+                    css: {
+                        '--tw-prose-body': theme('colors.base.black'),
+                        '--tw-prose-headings': theme('colors.purple.DEFAULT'),
+                        '--tw-prose-invert-body': theme('colors.base.paper'),
+                        '--tw-prose-invert-headings': theme('colors.purple.light'),
+                    }
+                }
+            }),
         },
     },
-    plugins: [],
+    plugins: [
+        require('@tailwindcss/typography'),
+    ],
     darkMode: 'class',
 }
