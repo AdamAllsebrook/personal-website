@@ -1,0 +1,17 @@
+---
+import { Code } from "astro:components";
+
+const { code, lang, name } = Astro.props;
+---
+
+<div class="prose-pre:m-0 prose-pre:rounded-none">
+    <div class="hidden dark:block">
+        <p class="m-0 pl-4 pt-1 prose-code:text-lg bg-[#22272e]">{name}</p>
+        <Code {code} {lang} theme="github-dark-dimmed" />
+    </div>
+    <div class="dark:hidden">
+        <p class="m-0 pl-4 pt-1 prose-code:text-lg bg-[#FDF6E3]">{name}</p>
+      <Code {code} {lang} theme="solarized-light" />
+    </div>
+</div>
+
