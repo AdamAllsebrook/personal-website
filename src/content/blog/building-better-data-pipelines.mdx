@@ -3,6 +3,8 @@ title: Building Better Data Pipelines with Python and GNU Parallel
 date: 2023-03-11
 ---
 
+import DarkFriendlyImage from '../../components/DarkFriendlyImage.svelte'
+
 When processing data, I often find myself creating an end-to-end solution in one programming language, however command line tools can be used to make these scripts much less complex and working in harmony with the 'Unix philosophy' can make them more adaptable. 
 
 Let's take a look at a problem I came across recently, comparing a 100% Python solution to one that takes advantage of command line programs such as GNU Parallel. 
@@ -149,7 +151,8 @@ Let's try to remove some of this complexity using [GNU Parallel](https://www.gnu
 
 These are the communication channels that are used to pass data between programs in the shell, and we can think of them as just blocks of text. A typical shell program looks like this:
 
-![A Shell Program](/images/stdin-stdout-stderr.png)
+
+<DarkFriendlyImage src="/images/stdin-stdout-stderr.png" alt="A Shell Program" />
 
 ### The pipe `|` operator
 
@@ -166,7 +169,7 @@ This operator takes the stdout of one program and passes it to another as stdin.
 
 `|` sits between the two commands, passing `cat`'s output to `grep`.
 
-![cat, grep diagram](/images/cat-grep.png)
+<DarkFriendlyImage src="/images/cat-grep.png" alt="cat, grep diagram" />
 
 ## Using GNU Parallel
 
