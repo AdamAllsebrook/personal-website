@@ -1,0 +1,356 @@
+---
+title: Building Better Data Pipelines with Python and GNU Parallel
+date: 2023-03-11
+---
+
+When processing data, I often find myself creating an end-to-end solution in one programming language, however command line tools can be used to make these scripts much less complex and working in harmony with the 'Unix philosophy' can make them more adaptable. 
+
+Let's take a look at a problem I came across recently, comparing a 100% Python solution to one that takes advantage of command line programs such as GNU Parallel. 
+
+## Table of Contents
+
+## The problem
+
+Given a CSV file contaning data for Spotify artists that looks like this:
+
+artists.csv
+```
+id,name,spotify_uri
+0,Drake,spotify:artist:3TVXtAsR1Inumwj472S9r4
+1,Bad Bunny,spotify:artist:4q3ewBCX7sLwd24euuV69X
+2,Ed Sheeran,spotify:artist:6eUKZXaKkcviH0Ku9w2n3V
+3,The Weeknd,spotify:artist:1Xyo4u8uXC1ZmMpatF05PJ
+4,Taylor Swift,spotify:artist:06HL4z0CvFAxyc27GXpf02
+```
+
+Write a script to figure out the YouTube channel for each artist. The resulting data should be stored in this SQLite database:
+
+
+artist.db
+```sql
+CREATE TABLE artist (
+    id INTEGER PRIMARY KEY,
+    name TEXT,
+    spotify_uri TEXT,
+    youtube_url TEXT
+);
+```
+
+## Python solution
+
+Here is a basic Python script to achieve this, minus concurrency, with a simplified `get_channel` function. 
+Here is my first attempt. The `get_channel` function is simplified here, though in reality it can take between 10 to 20 seconds.
+
+
+get_channel_1.py
+```py
+import pandas as pd
+import argparse
+import time
+import random
+import sqlite3
+
+
+NAME = 'name'
+SPOTIFY = 'spotify_uri'
+YOUTUBE = 'youtube_url'
+
+
+def get_channel(artist):
+    time.sleep(random.random())
+    return 'https://www.youtube.com/@%s' % artist[NAME].replace(' ', '')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input-csv', type=argparse.FileType('r'))
+    parser.add_argument('--output-db', type=str)
+    args = parser.parse_args()
+
+    df = pd.read_csv(args.input_csv)
+    df[YOUTUBE] = df.apply(get_channel, axis=1)
+
+    con = sqlite3.connect(args.output_db)
+    cur = con.cursor()
+
+    for _, artist in df.iterrows():
+        cur.execute(
+            f'INSERT INTO artist ({NAME}, {SPOTIFY}, {YOUTUBE}) VALUES (?, ?, ?)',
+            (artist[NAME], artist[SPOTIFY], artist[YOUTUBE])
+        )
+    con.commit()
+```
+
+It takes two arguments:
+- `--input-csv` The path to the CSV file to read from
+- `--output-db` The path to the SQLite database to write to, assuming it matches the schema above.
+
+`get_channel` is applied to to each row in the CSV sequentially, and then all rows are saved to the database. 
+
+### Issues  
+
+This script has a few problems:
+- If an error occurs while processing one row, the program will crash and no progress will be saved.
+- The program is slow and could be sped up using concurrency (running `get_channel` for multiple artists at the same time)
+- The script is limited in its inputs and outputs. In the future we may want to get channels for artists already in the database, but this would require changing the script. 
+
+## Ammended Python solution
+
+The first two issues can be solved using Python's `concurrent.futures` module and a `try` ... `except`.
+
+This function `get_many_channels` uses five parallel threads. We first submit all our jobs to the executor, keeping track of the index. Then we get the results back out of the executor, using the index to insert the channels into the correct row. 
+
+```py
+def get_many_channels(df):
+    df[YOUTUBE] = ''
+    with futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_channels = [
+            (index, executor.submit(get_channel, row))
+            for index, row in df.iterrows()
+        ]
+
+        for (index, future_channel) in future_channels:
+            try:
+                channel = future_channel.result(timeout=5)
+                df.at[index, YOUTUBE] = channel
+            except Exception:
+                continue
+    return df
+```
+
+We simply ignore any row that results in an error, though it would not be too much more effort to add some logic allowing a number of retries.
+
+Now we can replace this line from before:
+```py
+    df[YOUTUBE] = df.apply(get_channel, axis=1)
+```
+with this:
+```py
+    df = get_many_channels(df)
+```
+and we have a much faster and more robust script.
+
+### Issues
+
+Our script is growing and gaining complexity. Ideally it would have one function, figuring out YouTube channels, but now it is:
+- parsing command line arguments
+- loading data from a CSV file
+- handling concurrency with `futures`
+- preventing exceptions from crashing the program
+- storing data in a SQLite database
+
+We also still cannot use alternative input and output methods or customise parameters such as the number of parallel workers to use. These features could be added with additional command line arguments, but would contine to increase the complexity of the script. 
+
+Let's try to remove some of this complexity using [GNU Parallel](https://www.gnu.org/software/parallel/parallel.html)!
+
+## First, some shell concepts
+
+### stdin, stdout and stderr
+
+These are the communication channels that are used to pass data between programs in the shell, and we can think of them as just blocks of text. A typical shell program looks like this:
+
+![A Shell Program](/images/stdin-stdout-stderr.png)
+
+### The pipe `|` operator
+
+This operator takes the stdout of one program and passes it to another as stdin.
+
+```
+> cat artists.csv | grep Weeknd
+3,The Weeknd,spotify:artist:1Xyo4u8uXC1ZmMpatF05PJ
+```
+
+`cat` reads a file and sends this to stdout. 
+
+`grep` searches through stdin, sending any lines matching the given pattern to stdout.
+
+`|` sits between the two commands, passing `cat`'s output to `grep`.
+
+![cat, grep diagram](/images/cat-grep.png)
+
+## Using GNU Parallel
+
+First of all we'll rewrite our Python script to take in the data for one artist, process this data and then save it to our database.
+
+get_channel_3.py
+```py
+import argparse
+import time
+import random
+import sqlite3
+
+
+NAME = 'name'
+SPOTIFY = 'spotify_uri'
+YOUTUBE = 'youtube_url'
+
+
+def get_channel(name):
+    time.sleep(random.random())
+    return 'https://www.youtube.com/@%s' % name.replace(' ', '')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--name', type=str)
+    parser.add_argument('--spotify-uri', type=str)
+    parser.add_argument('--output-db', type=str)
+    args = parser.parse_args()
+
+    channel = get_channel(args.name)
+
+    con = sqlite3.connect(args.output_db)
+    cur = con.cursor()
+
+    cur.execute(
+        f'INSERT INTO artist ({NAME}, {SPOTIFY}, {YOUTUBE}) VALUES (?, ?, ?)',
+        (args.name, args.spotify_uri, channel)
+    )
+    con.commit()
+```
+
+Now we can execute the script using this command: 
+
+```bash
+cat artists.csv \
+| parallel --skip-first-line --colsep , --jobs 5 \
+    python get_channel_3.py --output-db=artist.db --name={2} --spotify-uri={3}
+```
+
+`\` is used to break the command into multiple lines for readability
+
+`cat artists.csv |` reads our CSV file and sends it to parallel
+
+### How does parallel work?
+
+Parallel is a command line tool for executing tasks concurrently.
+
+It can be installed like this:
+
+```bash
+sudo apt install parallel
+```
+
+Running parallel typically looks like this:
+
+```
+parallel <args> <command to run in parallel>
+```
+
+Let's look at the arguments we are using:
+
+`--skip-first-line` this prevents parallel from processing the csv header.
+
+`--colsep ,` this splits each line of the input on commas, and let's us access these values like `{1}` or `{2}` etc.
+
+`--jobs 5` this tells parallel to process a maximum of 5 tasks simultaneously.
+
+`python third_get_channel.py --output-db=artist.db --name={2} --spotify-uri={3}` runs our Python script, passing in the name and Spotify URI for an artist. 
+
+### This is great, but
+
+Now we are getting concurrency for free with parallel, only one artist will be affected if the script crashes, we have more freedom in how we input data and our code is much simpler!
+
+However there are a couple of problems. First, we never solved the issue of allowing the script to output to different formats. Second, we have now made it more difficult to process a CSV in one go without the help of a tool like parallel to split the data into individual rows. 
+
+Using parallel to handle CSVs in this way is also not a great solution as it depends on the columns being in a certain order rather than using the column headers, and rather than actually processing the CSV format, it simply splits rows by commas. This means that an artist such as Tyler, The Creator would be incorrectly processed, even if the row was formatted correctly like this:
+
+```
+106,"Tyler, The Creator",spotify:artist:4V8LLVI7PbaPR0K2TGSxFF
+```
+
+## Useful building blocks
+
+Let's create a couple of generic solutions for these problems.
+
+### Handling CSVs with Parallel
+
+Normally when we pass a CSV into parallel, each row is processed independently, so it loses the very helpful context of the columns headers. 
+
+To solve this we can use some bash magic to repeat the header above every row in the CSV, and then we can tell Parallel to process the data two rows at a time.
+
+```bash
+cat artists.csv \
+| (read header; while IFS= read -r line; do echo "$header"; echo "$line"; done) \
+| parallel --pipe -n 2 <command>
+```
+
+This pattern now passes two lines to the command by specifying `-n 2`, meaning that our script will be able to process the input data as a CSV (note the `--pipe` argument tells Parallel to pass its input as stdin to `<command>`). 
+
+### Converting CSV to SQL insert
+
+Rather than have our Python script interact with SQLite directly, we'd like for it to output its data in a standard format that can be reformatted to our needs. To achieve this we will refactor the script to output a CSV, which we can convert to SQL insert commands using this utility script:
+
+to_sql.py
+```py
+import pandas as pd
+import sys
+
+
+def to_sql_values(row):
+    values = [
+        str(value) if isinstance(value, int)
+        else '"%s"' % value
+        for value in row.values
+    ]
+    return '(%s),' % ','.join(values)
+
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print('Usage: python to_sql.py <table_name>', file=sys.stderr)
+        sys.exit(1)
+    table_name = sys.argv[1]
+    df = pd.read_csv(sys.stdin)
+
+    insert = 'INSERT INTO artist (%s) VALUES ' % ','.join(df.columns)
+    values = df.apply(to_sql_values, axis=1).str.cat(sep=' ')
+    statement = insert + values[:-1] + ';'
+
+    print(statement)
+```
+
+This script takes a CSV on stdin, converts this to an SQL insert command string using the specified table name, and outputs it to stdout. (Note: only string and integer values are currently handled)
+
+## The final product
+
+get_channel.py
+```py
+import sys
+import pandas as pd
+import time
+import random
+
+
+NAME = 'name'
+SPOTIFY = 'spotify_uri'
+YOUTUBE = 'youtube_url'
+
+
+def get_channel(artist):
+    time.sleep(random.random())
+    channel = 'https://www.youtube.com/@%s' % artist[NAME].replace(' ', '')
+    return pd.Series({
+        NAME: artist[NAME],
+        SPOTIFY: artist[SPOTIFY],
+        YOUTUBE: channel
+    })
+
+
+if __name__ == '__main__':
+    df = pd.read_csv(sys.stdin)
+    df.apply(get_channel, axis=1).to_csv(sys.stdout, index=False)
+```
+
+This script is much simpler than before, only interfacing with the input and output using CSV formats, which pandas can handle for us. (Though if your script has any configurable parameters, it would still be necessary to use a library such as argparse.) 
+
+
+```bash
+cat artists.csv \
+| (read header; while IFS= read -r line; do echo "$header"; echo "$line"; done) \
+| parallel --pipe -n 2 --jobs 5 'python get_channel.py | python to_sql.py artist' \
+| sqlite3 artist.db
+```
+
+
+
