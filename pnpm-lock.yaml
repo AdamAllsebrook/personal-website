@@ -11,6 +11,9 @@ dependencies:
   '@astrojs/tailwind':
     specifier: ^5.0.2
     version: 5.0.2(astro@3.4.3)(tailwindcss@3.3.5)
+  '@fontsource/manrope':
+    specifier: ^5.0.17
+    version: 5.0.17
   astro:
     specifier: ^3.4.3
     version: 3.4.3(typescript@5.2.2)
@@ -794,6 +797,10 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
+
+  /@fontsource/manrope@5.0.17:
+    resolution: {integrity: sha512-c53GfQw+lsP7grblDfkXduECBdPtOHZ4AJWUT7x/WdP73sRWkLpGoCMCqH+2XielLXfGO3MEXoaN7tvq11eEtw==}
+    dev: false
 
   /@jridgewell/gen-mapping@0.3.3:
     resolution: {integrity: sha512-HLhSWOLRi875zjjMG/r+Nv0oCW8umGb0BgEhyX3dDX3egwZtB8PqLnjz3yedt8R5StBrzcg4aBpnh8UA9D1BoQ==}
