@@ -1,21 +1,33 @@
 ---
 import '@fontsource/manrope'
+import DarkModeToggle from '../components/DarkModeToggle.svelte'
 ---
 
-<html lang="en" class="">
+<html lang="en">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Adam Allsebrook</title>
+        <script is:inline>
+            const isDarkMode = localStorage.getItem('darkMode');
+            const theme = isDarkMode === 'true' ? 'dark' : '';
+            document.querySelector("html").className = theme;
+          </script>
 	</head>
-	<body class="flex flex-col max-w-2xl mx-auto text-lg bg-base-paper dark:bg-base-black text-base-black dark:text-base-paper">
+	<body class="
+        flex flex-col max-w-2xl mx-auto text-lg p-4
+        bg-base-paper dark:bg-base-black text-base-black dark:text-base-paper transition-colors duration-300
+        ">
         <header class="flex justify-between my-16">
             <h1 class="">Adam Allsebrook</h1>
             <div class="flex space-x-4">
                 <a href="/blog">Blog</a>
                 <a href="/projects">Projects</a>
+                <div>
+                    <DarkModeToggle client:load />
+                </div>
             </div>
         </header>
         <slot />
