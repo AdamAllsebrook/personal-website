@@ -15,8 +15,9 @@ const { Content } = await entry.render();
 ---
 
 <MainLayout>
-  <article class="prose dark:prose-invert prose-base">
+  <article class="prose dark:prose-invert prose-base prose-lg">
     <h1>{entry.data.title}</h1>
+    <p class="text-base-500">{entry.data.date.toLocaleDateString('en-GB', {dateStyle: "long"})}</p>
     <Content />
   </article>
 </MainLayout>
