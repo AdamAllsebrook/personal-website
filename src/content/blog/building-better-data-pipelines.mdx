@@ -202,8 +202,8 @@ if __name__ == '__main__':
 
 Now we can execute the script using this command: 
 
-<CodeBlock lang="bash" code={`cat artists.csv \
-| parallel --skip-first-line --colsep , --jobs 5 \
+<CodeBlock lang="bash" code={`cat artists.csv \\
+| parallel --skip-first-line --colsep , --jobs 5 \\
     python get_channel_3.py --output-db=artist.db --name={2} --spotify-uri={3}
 `} />
 
@@ -256,8 +256,8 @@ Normally when we pass a CSV into parallel, each row is processed independently, 
 
 To solve this we can use some bash magic to repeat the header above every row in the CSV, and then we can tell Parallel to process the data two rows at a time.
 
-<CodeBlock lang="bash" code={`cat artists.csv \
-| (read header; while IFS= read -r line; do echo "$header"; echo "$line"; done) \
+<CodeBlock lang="bash" code={`cat artists.csv \\
+| (read header; while IFS= read -r line; do echo "$header"; echo "$line"; done) \\
 | parallel --pipe -n 2 <command>
 `} />
 
@@ -327,9 +327,9 @@ if __name__ == '__main__':
 This script is much simpler than before, only interfacing with the input and output using CSV formats, which pandas can handle for us. (Though if your script has any configurable parameters, it would still be necessary to use a library such as argparse.) 
 
 
-<CodeBlock lang="bash" code={`cat artists.csv \
-| (read header; while IFS= read -r line; do echo "$header"; echo "$line"; done) \
-| parallel --pipe -n 2 --jobs 5 'python get_channel.py | python to_sql.py artist' \
+<CodeBlock lang="bash" code={`cat artists.csv \\
+| (read header; while IFS= read -r line; do echo "$header"; echo "$line"; done) \\
+| parallel --pipe -n 2 --jobs 5 'python get_channel.py | python to_sql.py artist' \\
 | sqlite3 artist.db
 `} />
 
