@@ -6,7 +6,10 @@ const { code, lang, name } = Astro.props;
 ---
 
 <div
-  class="relative group prose-pre:m-0 prose-pre:rounded-none prose-pre:rounded-b code-snippet"
+  class:list={[
+    "relative group prose-pre:m-0 code-snippet",
+    name && "prose-pre:rounded-none prose-pre:rounded-b",
+  ]}
 >
   {
     name && (
@@ -15,6 +18,6 @@ const { code, lang, name } = Astro.props;
       </p>
     )
   }
-    <CopyCode {code} client:load />
-    <Code {code} {lang} theme="css-variables" />
+  <CopyCode {code} client:load />
+  <Code {code} {lang} theme="css-variables" />
 </div>
