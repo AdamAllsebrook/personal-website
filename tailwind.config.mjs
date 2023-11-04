@@ -13,9 +13,9 @@ export default {
             typography: ({ theme }) => ({
                 base: {
                     css: {
-                        '--tw-prose-body': theme('colors.base.black'),
+                        '--tw-prose-body': theme('colors.base[800]'),
                         '--tw-prose-headings': theme('colors.purple.DEFAULT'),
-                        '--tw-prose-invert-body': theme('colors.base.paper'),
+                        '--tw-prose-invert-body': theme('colors.base[200]'),
                         '--tw-prose-invert-headings': theme('colors.orange.light'),
                     }
                 }
