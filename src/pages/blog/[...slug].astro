@@ -27,18 +27,20 @@ const { Content, remarkPluginFrontmatter, headings } = await entry.render();
 </script>
 
 <MainLayout>
-  <div class="prose prose-base prose-lg relative flex dark:prose-invert">
-    <article class="">
-      <h1 class="mb-4">{entry.data.title}</h1>
-      <div class="mb-8 flex space-x-4 text-base-500">
-        <p>
-          {entry.data.date.toLocaleDateString("en-GB", { dateStyle: "long" })}
-        </p>
-        <p class="text-base-300 dark:text-base-700">/</p>
-        <p>{remarkPluginFrontmatter.minutesRead}</p>
-      </div>
-      <TableOfContents {headings} />
-      <Content />
-    </article>
-  </div>
+  <article
+    class="prose prose-base prose-lg max-w-none dark:prose-invert
+    prose-a:no-underline hover:prose-a:underline
+    prose-code:rounded-md prose-code:bg-base-50 prose-code:p-0.5 dark:prose-code:bg-base-950"
+  >
+    <h1 class="mb-4">{entry.data.title}</h1>
+    <div class="mb-8 flex space-x-4 text-base-500">
+      <p>
+        {entry.data.date.toLocaleDateString("en-GB", { dateStyle: "long" })}
+      </p>
+      <p class="text-base-300 dark:text-base-700">/</p>
+      <p>{remarkPluginFrontmatter.minutesRead}</p>
+    </div>
+    <TableOfContents {headings} />
+    <Content />
+  </article>
 </MainLayout>
