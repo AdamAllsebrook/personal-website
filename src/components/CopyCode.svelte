@@ -17,7 +17,7 @@
 
 <button
     on:click={copyCode}
-    class="absolute right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity grid"
+    class="absolute right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity grid"
     style={copied ? "opacity: 1" : ""}
 >
     {#if copied}
