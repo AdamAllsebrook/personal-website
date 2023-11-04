@@ -4,14 +4,15 @@ import { Code } from "astro:components";
 const { code, lang, name } = Astro.props;
 ---
 
-<div class="prose-pre:m-0 prose-pre:rounded-none">
-    <div class="hidden dark:block">
-        <p class="m-0 pl-4 pt-1 prose-code:text-lg bg-[#22272e]">{name}</p>
-        <Code {code} {lang} theme="github-dark-dimmed" />
-    </div>
-    <div class="dark:hidden">
-        <p class="m-0 pl-4 pt-1 prose-code:text-lg bg-[#FDF6E3]">{name}</p>
-      <Code {code} {lang} theme="solarized-light" />
-    </div>
+<div
+  class="prose-pre:m-0 prose-pre:rounded-none prose-pre:rounded-b code-snippet"
+>
+  {
+    name && (
+      <p class="m-0 pl-4 py-1 prose-code:text-lg bg-base-100 dark:bg-base-900 rounded-t">
+        {name}
+      </p>
+    )
+  }
+  <Code {code} {lang} theme="css-variables" />
 </div>
-

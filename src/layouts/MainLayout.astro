@@ -1,36 +1,91 @@
 ---
-import '@fontsource/manrope'
-import '@fontsource/ibm-plex-mono'
-import DarkModeToggle from '../components/DarkModeToggle.svelte'
+import "@fontsource/manrope";
+import "@fontsource/ibm-plex-mono";
+import DarkModeToggle from "../components/DarkModeToggle.svelte";
+import { colors } from "../../colors";
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Adam Allsebrook</title>
-        <script is:inline>
-            const isDarkMode = localStorage.getItem('darkMode');
-            const theme = isDarkMode === 'true' ? 'dark' : '';
-            document.querySelector("html").className = theme;
-          </script>
-	</head>
-	<body class="
-        flex flex-col max-w-3xl mx-auto p-4 text-lg
-        bg-base-paper dark:bg-base-black text-base-black dark:text-base-paper transition-colors duration-300
-        ">
-        <header class="flex justify-between my-16">
-            <h1 class="">Adam Allsebrook</h1>
-            <div class="flex space-x-4">
-                <a href="/blog">Blog</a>
-                <a href="/projects">Projects</a>
-                <div>
-                    <DarkModeToggle client:load />
-                </div>
-            </div>
-        </header>
-        <slot />
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Adam Allsebrook</title>
+    <script is:inline>
+      const isDarkMode = localStorage.getItem("darkMode");
+      const theme = isDarkMode === "true" ? "dark" : "";
+      document.querySelector("html").className = theme;
+    </script>
+  </head>
+  <body
+    class="flex flex-col max-w-3xl mx-auto p-4 text-lg
+        bg-base-paper dark:bg-base-black text-base-black dark:text-base-paper transition-colors duration-300"
+  >
+    <header class="flex justify-between my-16">
+      <h1 class="">Adam Allsebrook</h1>
+      <div class="flex space-x-4">
+        <a href="/blog">Blog</a>
+        <a href="/projects">Projects</a>
+        <div>
+          <DarkModeToggle client:load />
+        </div>
+      </div>
+    </header>
+    <slot />
+  </body>
 </html>
+
+<style
+  is:global
+  define:vars={{
+    bgLight: colors.base[50],
+    bgDark: colors.base[950],
+    gray: colors.base[500],
+    grayDark: colors.base[500],
+    red: colors.red.DEFAULT,
+    redDark: colors.red.light,
+    orange: colors.orange.DEFAULT,
+    orangeDark: colors.orange.light,
+    yellow: colors.yellow.DEFAULT,
+    yellowDark: colors.yellow.light,
+    green: colors.green.DEFAULT,
+    greenDark: colors.green.light,
+    cyan: colors.cyan.DEFAULT,
+    cyanDark: colors.cyan.light,
+    blue: colors.blue.DEFAULT,
+    blueDark: colors.blue.light,
+    purple: colors.purple.DEFAULT,
+    purpleDark: colors.purple.light,
+    magenta: colors.magenta.DEFAULT,
+    magentaDark: colors.magenta.light,
+  }}
+>
+  .code-snippet {
+    --astro-code-color-text: var(--blue);
+    --astro-code-color-background: var(--bgLight);
+    --astro-code-token-constant: var(--cyan);
+    --astro-code-token-string: var(--orange);
+    --astro-code-token-comment: var(--gray);
+    --astro-code-token-keyword: var(--purple);
+    --astro-code-token-parameter: var(--red);
+    --astro-code-token-function: var(--yellow);
+    --astro-code-token-string-expression: var(--orange);
+    --astro-code-token-punctuation: var(--green);
+    --astro-code-token-link: var(--magenta);
+  }
+
+  html.dark .code-snippet {
+    --astro-code-color-text: var(--yellowDark);
+    --astro-code-color-background: var(--bgDark);
+    --astro-code-token-constant: var(--blueDark);
+    --astro-code-token-string: var(--orangeDark);
+    --astro-code-token-comment: var(--grayDark);
+    --astro-code-token-keyword: var(--purpleDark);
+    --astro-code-token-parameter: var(--redDark);
+    --astro-code-token-function: var(--cyanDark);
+    --astro-code-token-string-expression: var(--orangeDark);
+    --astro-code-token-punctuation: var(--greenDark);
+    --astro-code-token-link: var(--magentaDark);
+  }
+</style>
