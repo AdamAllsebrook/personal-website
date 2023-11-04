@@ -15,7 +15,7 @@ export default {
                     css: {
                         '--tw-prose-body': theme('colors.base[800]'),
                         '--tw-prose-headings': theme('colors.purple.DEFAULT'),
-                        '--tw-prose-links': theme('colors.blue.DEFAULT'),
+                        '--tw-prose-links': theme('colors.blue.light'),
                         '--tw-prose-invert-body': theme('colors.base[200]'),
                         '--tw-prose-invert-headings': theme('colors.orange.light'),
                         '--tw-prose-invert-links': theme('colors.blue.light'),
