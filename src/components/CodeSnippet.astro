@@ -7,13 +7,13 @@ const { code, lang, name } = Astro.props;
 
 <div
   class:list={[
-    "relative group prose-pre:m-0 code-snippet",
+    "code-snippet group relative prose-pre:m-0",
     name && "prose-pre:rounded-none prose-pre:rounded-b",
   ]}
 >
   {
     name && (
-      <p class="m-0 pl-4 py-1 prose-code:text-lg bg-base-100 dark:bg-base-900 rounded-t">
+      <p class="m-0 rounded-t bg-base-100 py-1 pl-4 prose-code:text-lg dark:bg-base-900">
         {name}
       </p>
     )
