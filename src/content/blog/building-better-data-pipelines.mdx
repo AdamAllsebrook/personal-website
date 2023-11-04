@@ -4,7 +4,7 @@ date: 2023-03-11
 ---
 
 import Image from '../../components/Image.svelte'
-import CodeBlock from '../../components/CodeBlock.astro'
+import CodeSnippet from '../../components/CodeSnippet.astro'
 
 When processing data, I often find myself creating an end-to-end solution in one programming language, however command line tools can be used to make these scripts much less complex and working in harmony with the 'Unix philosophy' can make them more adaptable. 
 
@@ -16,7 +16,7 @@ Let's take a look at a problem I came across recently, comparing a 100% Python s
 
 Given a CSV file contaning data for Spotify artists that looks like this:
 
-<CodeBlock name="artists.csv" lang="" code={`id,name,spotify_uri
+<CodeSnippet name="artists.csv" lang="" code={`id,name,spotify_uri
 0,Drake,spotify:artist:3TVXtAsR1Inumwj472S9r4
 1,Bad Bunny,spotify:artist:4q3ewBCX7sLwd24euuV69X
 2,Ed Sheeran,spotify:artist:6eUKZXaKkcviH0Ku9w2n3V
@@ -26,7 +26,7 @@ Given a CSV file contaning data for Spotify artists that looks like this:
 
 Write a script to figure out the YouTube channel for each artist. The resulting data should be stored in this SQLite database:
 
-<CodeBlock name="artist.db" lang="sql" code={`CREATE TABLE artist (
+<CodeSnippet name="artist.db" lang="sql" code={`CREATE TABLE artist (
     id INTEGER PRIMARY KEY,
     name TEXT,
     spotify_uri TEXT,
@@ -40,7 +40,7 @@ Here is a basic Python script to achieve this, minus concurrency, with a simplif
 Here is my first attempt. The `get_channel` function is simplified here, though in reality it can take between 10 to 20 seconds.
 
 
-<CodeBlock name="get_channel_1.py" lang="py" code={`import pandas as pd
+<CodeSnippet name="get_channel_1.py" lang="py" code={`import pandas as pd
 import argparse
 import time
 import random
@@ -96,7 +96,7 @@ The first two issues can be solved using Python's `concurrent.futures` module an
 
 This function `get_many_channels` uses five parallel threads. We first submit all our jobs to the executor, keeping track of the index. Then we get the results back out of the executor, using the index to insert the channels into the correct row. 
 
-<CodeBlock lang="py" code={`def get_many_channels(df):
+<CodeSnippet lang="py" code={`def get_many_channels(df):
     df[YOUTUBE] = ''
     with futures.ThreadPoolExecutor(max_workers=5) as executor:
         future_channels = [
@@ -116,10 +116,10 @@ This function `get_many_channels` uses five parallel threads. We first submit al
 We simply ignore any row that results in an error, though it would not be too much more effort to add some logic allowing a number of retries.
 
 Now we can replace this line from before:
-<CodeBlock lang="py" code={`    df[YOUTUBE] = df.apply(get_channel, axis=1)
+<CodeSnippet lang="py" code={`    df[YOUTUBE] = df.apply(get_channel, axis=1)
 `} />
 with this:
-<CodeBlock lang="py" code={`    df = get_many_channels(df)
+<CodeSnippet lang="py" code={`    df = get_many_channels(df)
 `} />
 and we have a much faster and more robust script.
 
@@ -149,7 +149,7 @@ These are the communication channels that are used to pass data between programs
 
 This operator takes the stdout of one program and passes it to another as stdin.
 
-<CodeBlock lang="" code={`> cat artists.csv | grep Weeknd
+<CodeSnippet lang="" code={`> cat artists.csv | grep Weeknd
 3,The Weeknd,spotify:artist:1Xyo4u8uXC1ZmMpatF05PJ
 `} />
 
@@ -165,7 +165,7 @@ This operator takes the stdout of one program and passes it to another as stdin.
 
 First of all we'll rewrite our Python script to take in the data for one artist, process this data and then save it to our database.
 
-<CodeBlock name="get_channel_3.py" lang="py" code={`import argparse
+<CodeSnippet name="get_channel_3.py" lang="py" code={`import argparse
 import time
 import random
 import sqlite3
@@ -202,7 +202,7 @@ if __name__ == '__main__':
 
 Now we can execute the script using this command: 
 
-<CodeBlock lang="bash" code={`cat artists.csv \\
+<CodeSnippet lang="bash" code={`cat artists.csv \\
 | parallel --skip-first-line --colsep , --jobs 5 \\
     python get_channel_3.py --output-db=artist.db --name={2} --spotify-uri={3}
 `} />
@@ -217,12 +217,12 @@ Parallel is a command line tool for executing tasks concurrently.
 
 It can be installed like this:
 
-<CodeBlock lang="bash" code={`sudo apt install parallel
+<CodeSnippet lang="bash" code={`sudo apt install parallel
 `} />
 
 Running parallel typically looks like this:
 
-<CodeBlock lang="" code={`parallel <args> <command to run in parallel>
+<CodeSnippet lang="" code={`parallel <args> <command to run in parallel>
 `} />
 
 Let's look at the arguments we are using:
@@ -243,7 +243,7 @@ However there are a couple of problems. First, we never solved the issue of allo
 
 Using parallel to handle CSVs in this way is also not a great solution as it depends on the columns being in a certain order rather than using the column headers, and rather than actually processing the CSV format, it simply splits rows by commas. This means that an artist such as Tyler, The Creator would be incorrectly processed, even if the row was formatted correctly like this:
 
-<CodeBlock lang="" code={`106,"Tyler, The Creator",spotify:artist:4V8LLVI7PbaPR0K2TGSxFF
+<CodeSnippet lang="" code={`106,"Tyler, The Creator",spotify:artist:4V8LLVI7PbaPR0K2TGSxFF
 `} />
 
 ## Useful building blocks
@@ -256,7 +256,7 @@ Normally when we pass a CSV into parallel, each row is processed independently, 
 
 To solve this we can use some bash magic to repeat the header above every row in the CSV, and then we can tell Parallel to process the data two rows at a time.
 
-<CodeBlock lang="bash" code={`cat artists.csv \\
+<CodeSnippet lang="bash" code={`cat artists.csv \\
 | (read header; while IFS= read -r line; do echo "$header"; echo "$line"; done) \\
 | parallel --pipe -n 2 <command>
 `} />
@@ -267,7 +267,7 @@ This pattern now passes two lines to the command by specifying `-n 2`, meaning t
 
 Rather than have our Python script interact with SQLite directly, we'd like for it to output its data in a standard format that can be reformatted to our needs. To achieve this we will refactor the script to output a CSV, which we can convert to SQL insert commands using this utility script:
 
-<CodeBlock name="to_sql.py" lang="py" code={`import pandas as pd
+<CodeSnippet name="to_sql.py" lang="py" code={`import pandas as pd
 import sys
 
 
@@ -298,7 +298,7 @@ This script takes a CSV on stdin, converts this to an SQL insert command string 
 
 ## The final product
 
-<CodeBlock name="get_channel.py" lang="py" code={`import sys
+<CodeSnippet name="get_channel.py" lang="py" code={`import sys
 import pandas as pd
 import time
 import random
@@ -327,7 +327,7 @@ if __name__ == '__main__':
 This script is much simpler than before, only interfacing with the input and output using CSV formats, which pandas can handle for us. (Though if your script has any configurable parameters, it would still be necessary to use a library such as argparse.) 
 
 
-<CodeBlock lang="bash" code={`cat artists.csv \\
+<CodeSnippet lang="bash" code={`cat artists.csv \\
 | (read header; while IFS= read -r line; do echo "$header"; echo "$line"; done) \\
 | parallel --pipe -n 2 --jobs 5 'python get_channel.py | python to_sql.py artist' \\
 | sqlite3 artist.db
