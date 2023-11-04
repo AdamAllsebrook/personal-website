@@ -1,0 +1,19 @@
+---
+const { heading } = Astro.props;
+import type { Heading } from "./TableOfContents.astro";
+---
+
+<li class="m-0 list-none p-0">
+  <a href={"#" + heading.slug} class="hover:underline">
+    {heading.text}
+  </a>
+  {
+    heading.subheadings.length > 0 && (
+      <ul class="ml-8 text-base-500">
+        {heading.subheadings.map((subheading: Heading) => (
+          <Astro.self heading={subheading} />
+        ))}
+      </ul>
+    )
+  }
+</li>

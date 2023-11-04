@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import MainLayout from "../../layouts/MainLayout.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection("blog");
@@ -11,19 +12,33 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content, remarkPluginFrontmatter } = await entry.render();
+const { Content, remarkPluginFrontmatter, headings } = await entry.render();
 ---
 
+<script>
+  // move the table of contents to the specified location in the page
+  let tocTitle = document.querySelector("#table-of-contents");
+  let toc = document.querySelector(".toc");
+
+  if (tocTitle && toc) {
+    toc.remove();
+    tocTitle.after(toc);
+  }
+</script>
+
 <MainLayout>
-  <article class="prose prose-base prose-lg dark:prose-invert">
-    <h1>{entry.data.title}</h1>
-    <div class="mb-12 flex space-x-4 text-base-500">
-      <p>
-        {entry.data.date.toLocaleDateString("en-GB", { dateStyle: "long" })}
-      </p>
-      <p class="text-base-300 dark:text-base-700">/</p>
-      <p>{remarkPluginFrontmatter.minutesRead}</p>
-    </div>
-    <Content />
-  </article>
+  <div class="prose prose-base prose-lg relative flex dark:prose-invert">
+    <article class="">
+      <h1 class="mb-4">{entry.data.title}</h1>
+      <div class="mb-8 flex space-x-4 text-base-500">
+        <p>
+          {entry.data.date.toLocaleDateString("en-GB", { dateStyle: "long" })}
+        </p>
+        <p class="text-base-300 dark:text-base-700">/</p>
+        <p>{remarkPluginFrontmatter.minutesRead}</p>
+      </div>
+      <TableOfContents {headings} />
+      <Content />
+    </article>
+  </div>
 </MainLayout>

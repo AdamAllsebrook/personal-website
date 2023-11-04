@@ -1,0 +1,36 @@
+---
+import TableOfContentsHeading from "./TableOfContentsHeading.astro";
+
+export type Heading = {
+  depth: number;
+  text: string;
+  slug: string;
+  subheadings?: Heading[];
+};
+
+const { headings } = Astro.props;
+const toc = buildToc(headings);
+
+function buildToc(headings: Heading[]): Heading[] {
+  const toc: Heading[] = [];
+  const parentHeadings = new Map();
+  headings.forEach((h) => {
+    if (h.text === "Table of Contents") return;
+    const heading = { ...h, subheadings: [] };
+    parentHeadings.set(heading.depth, heading);
+    // Change 2 to 1 if your markdown includes your <h1>
+    if (heading.depth === 2) {
+      toc.push(heading);
+    } else {
+      parentHeadings.get(heading.depth - 1).subheadings.push(heading);
+    }
+  });
+  return toc;
+}
+---
+
+<nav class="toc not-prose">
+  <ul>
+    {toc.map((heading) => <TableOfContentsHeading heading={heading} />)}
+  </ul>
+</nav>
