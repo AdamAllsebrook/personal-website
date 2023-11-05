@@ -7,10 +7,16 @@ const allPosts = await getCollection("blog");
 ---
 
 <MainLayout>
-  <main class="flex flex-col gap-8">
-    <h1 class="mb-8 text-5xl font-bold text-purple dark:text-orange-light">
+  <main class="flex flex-col gap-4">
+    <h1 class="mb-12 text-5xl font-bold text-purple dark:text-orange-light">
       Blog
     </h1>
-    {allPosts.map((post) => <BlogPostCard {post} />)}
+    {
+      allPosts
+        .sort((a, b) => {
+          return a.data.date < b.data.date ? 1 : -1;
+        })
+        .map((post) => <BlogPostCard {post} />)
+    }
   </main>
 </MainLayout>
