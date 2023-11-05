@@ -5,6 +5,7 @@ const { remarkPluginFrontmatter } = await post.render();
 
 <a href={`/blog/${post.slug}`} class="group gap-4">
   <h2 class="text-xl font-bold group-hover:underline">
+    {post.data.draft && <span class="text-base-500">Draft: </span>}
     {post.data.title}
   </h2>
   <div class="flex gap-4 text-base-500">
