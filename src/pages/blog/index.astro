@@ -1,0 +1,14 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import BlogPostCard from "../../components/BlogPostCard.astro";
+import { getCollection } from "astro:content";
+
+const allPosts = await getCollection("blog");
+---
+
+<MainLayout>
+  <main class="flex flex-col gap-8">
+    <h1 class="mb-8 text-5xl">Blog</h1>
+    {allPosts.map((post) => <BlogPostCard {post} />)}
+  </main>
+</MainLayout>

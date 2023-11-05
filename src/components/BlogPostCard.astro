@@ -1,0 +1,15 @@
+---
+const { post } = Astro.props;
+const { remarkPluginFrontmatter } = await post.render();
+---
+
+<a href={`/blog/${post.slug}`} class="gap-4">
+  <h2 class="text-xl font-bold text-purple dark:text-orange-light">
+    {post.data.title}
+  </h2>
+  <div class="flex gap-4 text-base-500">
+    <p>{post.data.date.toLocaleString("en-GB", { dateStyle: "short" })}</p>
+    <p class="text-base-300 dark:text-base-700">/</p>
+    <p>{remarkPluginFrontmatter.minutesRead}</p>
+  </div>
+</a>
