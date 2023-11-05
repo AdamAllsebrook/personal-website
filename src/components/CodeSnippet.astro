@@ -1,6 +1,7 @@
 ---
 import { Code } from "astro:components";
 import CopyCode from "./CopyCode.svelte";
+import { colors } from "../../colors";
 
 const { code, lang, name } = Astro.props;
 ---
@@ -21,3 +22,56 @@ const { code, lang, name } = Astro.props;
   <CopyCode {code} client:load />
   <Code {code} {lang} theme="css-variables" />
 </div>
+
+<style
+  define:vars={{
+    bgLight: colors.base[50],
+    bgDark: colors.base[950],
+    gray: colors.base[500],
+    grayLight: colors.base[500],
+    red: colors.red.DEFAULT,
+    redLight: colors.red.light,
+    orange: colors.orange.DEFAULT,
+    orangeLight: colors.orange.light,
+    yellow: colors.yellow.DEFAULT,
+    yellowLight: colors.yellow.light,
+    green: colors.green.DEFAULT,
+    greenLight: colors.green.light,
+    cyan: colors.cyan.DEFAULT,
+    cyanLight: colors.cyan.light,
+    blue: colors.blue.DEFAULT,
+    blueLight: colors.blue.light,
+    purple: colors.purple.DEFAULT,
+    purpleLight: colors.purple.light,
+    magenta: colors.magenta.DEFAULT,
+    magentaLight: colors.magenta.light,
+  }}
+>
+  .code-snippet {
+    --astro-code-color-text: var(--blue);
+    --astro-code-color-background: var(--bgLight);
+    --astro-code-token-constant: var(--cyan);
+    --astro-code-token-string: var(--orange);
+    --astro-code-token-comment: var(--gray);
+    --astro-code-token-keyword: var(--purple);
+    --astro-code-token-parameter: var(--red);
+    --astro-code-token-function: var(--yellow);
+    --astro-code-token-string-expression: var(--orange);
+    --astro-code-token-punctuation: var(--green);
+    --astro-code-token-link: var(--magenta);
+  }
+
+  html.dark .code-snippet {
+    --astro-code-color-text: var(--yellowLight);
+    --astro-code-color-background: var(--bgDark);
+    --astro-code-token-constant: var(--blueLight);
+    --astro-code-token-string: var(--orangeLight);
+    --astro-code-token-comment: var(--grayLight);
+    --astro-code-token-keyword: var(--purpleLight);
+    --astro-code-token-parameter: var(--redLight);
+    --astro-code-token-function: var(--cyanLight);
+    --astro-code-token-string-expression: var(--orangeLight);
+    --astro-code-token-punctuation: var(--greenLight);
+    --astro-code-token-link: var(--magentaLight);
+  }
+</style>
