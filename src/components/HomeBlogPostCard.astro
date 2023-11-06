@@ -1,0 +1,27 @@
+---
+import { CornerRightUp } from "lucide-svelte";
+const { post } = Astro.props;
+const { remarkPluginFrontmatter } = await post.render();
+---
+
+<a
+  href={`/blog/${post.slug}`}
+  class="group gap-4 rounded-md bg-base-50 p-4 shadow-sm dark:bg-base-950"
+>
+  <div class="flex justify-between">
+    <h2 class="">
+      {
+        post.data.draft && (
+          <span class="font-medium text-base-500">Draft: </span>
+        )
+      }
+      {post.data.title}
+    </h2>
+    <CornerRightUp strokeWidth="1.5" class="ml-1 flex-shrink-0 text-base-500" />
+  </div>
+  <div class="flex gap-4 text-base-500">
+    <p>{post.data.date.toLocaleString("en-GB", { dateStyle: "short" })}</p>
+    <p class="text-base-300 dark:text-base-700">/</p>
+    <p>{remarkPluginFrontmatter.minutesRead}</p>
+  </div>
+</a>

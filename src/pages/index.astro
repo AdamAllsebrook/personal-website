@@ -1,7 +1,40 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
+import { getCollection } from "astro:content";
+import HomeBlogPostCard from "../components/HomeBlogPostCard.astro";
+import { CornerRightUp } from "lucide-svelte";
+
+const allPosts = await getCollection("blog");
 ---
 
 <MainLayout>
-  <h1 class="text-2xl font-bold">Hey, I'm Adam.</h1>
+  <main class="flex flex-col gap-4">
+    <div class="mb-12">
+      <h1 class="mb-6 text-4xl font-bold text-purple dark:text-orange-light">
+        Hey, I'm Adam 👋
+      </h1>
+      <p>
+        I like building software, and I've started writing about things I'm
+        interested in.
+      </p>
+    </div>
+    <h2 class="text-2xl font-bold text-purple dark:text-orange-light">
+      Recent posts
+    </h2>
+    {
+      allPosts
+        .sort((a, b) => {
+          return a.data.date < b.data.date ? 1 : -1;
+        })
+        .slice(0, 3)
+        .map((post) => <HomeBlogPostCard {post} />)
+    }
+
+    <div class="flex justify-end p-4">
+      <a class="flex hover:underline" href="/blog">
+        All posts
+        <CornerRightUp strokeWidth="1.5" class="my-auto ml-1 text-base-500" />
+      </a>
+    </div>
+  </main>
 </MainLayout>
