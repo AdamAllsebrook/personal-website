@@ -120,7 +120,7 @@ We simply ignore any row that results in an error,
 though it would not be too much more effort to add some logic allowing a number of retries.
 
 Now we can replace this line from before:
-<CodeSnippet lang="py" code={`    df[YOUTUBE] = df.apply(get_channel, axis=1) `} />
+<CodeSnippet lang="py" code={`    df['youtube_url'] = df.apply(get_channel, axis=1) `} />
 with this:
 <CodeSnippet lang="py" code={`    df = get_many_channels(df) `} />
 and we have a much faster and less error-prone script.
