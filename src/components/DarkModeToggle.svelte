@@ -2,7 +2,6 @@
   import { Sun } from "lucide-svelte";
   import { Moon } from "lucide-svelte";
   import { onMount } from "svelte";
-  import { scale } from "svelte/transition";
   import { darkMode } from "../stores";
 
   let htmlRoot: HTMLElement | null;
@@ -24,18 +23,15 @@
 </script>
 
 <button class="grid" name="toggleDarkMode" on:click={() => toggleDarkMode()}>
-  {#if $darkMode === true}
-    <div class="col-start-1 row-start-1" transition:scale={{ duration: 300 }}>
-      <Moon size="24" strokeWidth="1.5" />
-    </div>
-  {:else if $darkMode === false}
-    <div class="col-start-1 row-start-1" transition:scale={{ duration: 300 }}>
-      <Sun size="24" strokeWidth="1.5" />
-    </div>
-  {:else}
-    <div class="opacity-0">
-      <Moon size="24" strokeWidth="1.5" />
-    </div>
-  {/if}
+  <div
+    class="col-start-1 row-start-1 scale-0 transition-transform duration-300 dark:scale-100"
+  >
+    <Moon size="24" strokeWidth="1.5" />
+  </div>
+  <div
+    class="col-start-1 row-start-1 scale-100 transition-transform duration-300 dark:scale-0"
+  >
+    <Sun size="24" strokeWidth="1.5" />
+  </div>
 </button>
 <label for="toggleDarkMode" class="hidden">Toggle Dark Mode</label>

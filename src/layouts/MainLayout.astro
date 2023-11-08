@@ -5,7 +5,7 @@ import NavBar from "../components/NavBar.astro";
 import Footer from "../components/Footer.astro";
 ---
 
-<html lang="en">
+<html lang="en" class="group/html">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -13,9 +13,14 @@ import Footer from "../components/Footer.astro";
     <meta name="generator" content={Astro.generator} />
     <title>Adam Allsebrook</title>
     <script is:inline>
-      const isDarkMode = localStorage.getItem("darkMode");
-      const theme = isDarkMode === "true" ? "dark" : "";
-      document.querySelector("html").className = theme;
+      let isDarkMode = localStorage.getItem("darkMode");
+      if (isDarkMode === null) {
+        localStorage.setItem("darkMode", "true");
+        isDarkMode = "true";
+      }
+      document
+        .querySelector("html")
+        .classList.toggle("dark", isDarkMode === "true" ? true : false);
     </script>
   </head>
   <body
